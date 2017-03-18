@@ -3,9 +3,10 @@ from django.http import HttpResponse
 from django.shortcuts import *
 from django.template import loader
 from oauth2client.client import OAuth2WebServerFlow
-from .models import User
+from .models import User, Transaction
 import requests
 import json
+from dateutil.parser import parse
 
 from datetime import datetime, timedelta
 
@@ -32,17 +33,58 @@ def auth(request):
 
 def auth_return(request):
   if 'access_token' in request.GET:
-    u = User(access_token=request.GET['access_token'],
-             token_expiration=datetime.now() + timedelta(seconds=int(request.GET['expires_in'])))
-    u.save()
-    transactions = access_endpoint(u, '/transactions')
-    addresses = access_endpoint(u, '/addresses')
-    cash_accounts = access_endpoint(u, '/cashAccounts')
-    user_info = access_endpoint(u, '/userInfo')
-  return render(request, 'dbank_api/auth_return.html')
+    u = retrieve_and_store_user_data(request)
+    first_name = u.first_name
+    last_name = u.last_name
+    context = {'first_name': first_name, 'last_name': last_name}
+    return render(request, 'dbank_api/auth_return.html', context)
+
+  else:
+    return render(request, 'dbank_api/auth_return.html')
 
 def access_endpoint(user, endpoint):
   auth_header = {'Authorization': 'Bearer ' + str(user.access_token)}
   response = requests.get('https://simulator-api.db.com/gw/dbapi/v1' + endpoint, headers=auth_header)
   ledger_dict = json.loads(response.text)
   return ledger_dict
+
+def retrieve_and_store_user_data(request):
+  # save access token and token expiration datetime
+  u = User(access_token=request.GET['access_token'],
+           token_expiration=datetime.now() + timedelta(seconds=int(request.GET['expires_in'])))
+  u.save()
+
+  # make api calls for user
+  transactions = access_endpoint(u, '/transactions')
+  addresses = access_endpoint(u, '/addresses')
+  cash_accounts = access_endpoint(u, '/cashAccounts')
+  user_info = access_endpoint(u, '/userInfo')
+
+  # save basic user information
+  u.first_name = user_info['firstName']
+  u.last_name = user_info['lastName']
+  u.male = ('male' == user_info['gender'])
+  u.date_of_birth = parse(user_info['dateOfBirth'])
+
+  # save address
+  if len(addresses) >= 1:
+    i = 0
+    u.city = addresses[i]['city']
+    u.street = addresses[i]['street']
+    u.house_number = addresses[i]['houseNumber']
+    u.zip = addresses[i]['zip']
+
+  u.save()
+
+  # store transactions
+  for transact in transactions:
+    t = Transaction(
+      user=u,
+      origin_iban=transact['originIban'],
+      amount=float(transact['amount']),
+      counter_party_name=transact['counterPartyName'],
+      usage=transact['usage'],
+      booking_date=parse(transact['bookingDate'])
+    )
+    t.save()
+  return u
