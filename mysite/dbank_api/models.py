@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
-
+from .data import Categories
+from collections import Counter
+import re
 
 class User(models.Model):
   #basic user info
@@ -19,11 +21,17 @@ class User(models.Model):
   zip = models.CharField(max_length=10, null=True)
   city = models.CharField(max_length=30, null=True)
 
+  def get_keywords_and_categories(self):
+    counted_set = build_dict(self.get_transactions())
+    keywords = get_most_frequent_keywords(counted_set, 3)
+    categories = get_categories(keywords)
+    return keywords, categories
+
   def get_transactions(self):
-    return Transaction(user=self).objects
+    return Transaction.objects.filter(user=self).all()
 
   def get_vouchers(self):
-    return Voucher(user=self).objects
+    return Voucher.objects.filter(user=self).all()
 
 class Transaction(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -43,3 +51,29 @@ class Voucher(models.Model):
   new_price = models.FloatField(null=True)
   groupon_link = models.CharField(max_length=300, null=True)
   score = models.FloatField(null=True)
+
+
+def get_most_frequent_keywords(countedSet, numberOfKeywords):
+  keywordsList = []
+  for entry in countedSet.most_common(numberOfKeywords):
+    keywordsList.append(entry[0])
+  return keywordsList
+
+def get_categories(keywordsList):
+  cat = Categories()
+  foundCategories = set()
+
+  for keyword in keywordsList:
+    for key in cat.allCategories.keys():
+      pattern = re.compile(".*"+keyword+".*", re.IGNORECASE)
+      for value in cat.allCategories.get(key):
+        if pattern.match(value) is not None:
+          foundCategories.add(key)
+
+  return list(foundCategories)
+
+def build_dict(list):
+ dict = []
+ for t in list:
+   dict.append(t.counter_party_name)
+ return Counter(dict)
