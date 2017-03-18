@@ -31,7 +31,7 @@ class User(models.Model):
     return Transaction.objects.filter(user=self).all()
 
   def get_vouchers(self):
-    return Voucher.objects.filter(user=self).all()
+    return Voucher.objects.all()#filter(user=self).all() #TODO: apply filter
 
 class Transaction(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)

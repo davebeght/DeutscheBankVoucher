@@ -57,12 +57,12 @@
 
 
     <div class="row">
-        {% for voucher in voucher_list %}
+        {% for voucher in vouchers %}
             <div class="col-sm-12 col-md-4 col-lg-3">
                 <div class="card card-block">
-                    <img }class="card-img-top" src={{voucher.image_url}} style="height: 180px; width: 100%; display: block;">
+                    <img class="card-img-top" src=http://{{voucher.image_url}} style="height: 180px; width: 100%; display: block;">
                     <div class="card-block">
-                        <h4><a class="card-title" href={{voucher.groupon_link}}>{{voucher.merchant}}</h4>
+                        <h4><a class="card-title" href={{voucher.groupon_link}}>{{voucher.merchant}}></h4>
                         <p class="card-text">{{voucher.description}}</p>
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">{{voucher.new_price}}</li>
