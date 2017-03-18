@@ -1,1 +1,1 @@
-pip install django
+pip install django oauth2-client
