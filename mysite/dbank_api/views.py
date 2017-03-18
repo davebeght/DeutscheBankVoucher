@@ -34,8 +34,13 @@ def auth(request):
 def auth_return(request):
   if 'access_token' in request.GET:
     u = retrieve_and_store_user_data(request)
+    first_name = u.first_name
+    last_name = u.last_name
+    context = {'first_name': first_name, 'last_name': last_name}
+    return render(request, 'dbank_api/auth_return.html', context)
 
-  return render(request, 'dbank_api/auth_return.html')
+  else:
+    return render(request, 'dbank_api/auth_return.html')
 
 def access_endpoint(user, endpoint):
   auth_header = {'Authorization': 'Bearer ' + str(user.access_token)}
