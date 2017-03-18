@@ -5,6 +5,7 @@ from django.template import loader
 from oauth2client.client import OAuth2WebServerFlow
 from .models import User
 import requests
+import json
 
 from datetime import datetime, timedelta
 
@@ -18,7 +19,7 @@ def auth(request):
 
                              client_secret='APbhxDPiJOyTLVS096VTQCKBsItdXVzrBYXsqhLhkC3s4gdRIiuZVx0LC-o8Ler0kYizJFsfE7wjCPlVGbx3cUA',
 
-                             scope='read_accounts',
+                             scope='',
 
                              redirect_uri='http://localhost:8000/dbank_api/auth_return',
 
@@ -34,10 +35,14 @@ def auth_return(request):
     u = User(access_token=request.GET['access_token'],
              token_expiration=datetime.now() + timedelta(seconds=int(request.GET['expires_in'])))
     u.save()
-    print(access_endpoint(u, '/transactions'))
+    transactions = access_endpoint(u, '/transactions')
+    addresses = access_endpoint(u, '/addresses')
+    cash_accounts = access_endpoint(u, '/cashAccounts')
+    user_info = access_endpoint(u, '/userInfo')
   return render(request, 'dbank_api/auth_return.html')
 
 def access_endpoint(user, endpoint):
   auth_header = {'Authorization': 'Bearer ' + str(user.access_token)}
   response = requests.get('https://simulator-api.db.com/gw/dbapi/v1' + endpoint, headers=auth_header)
-  return response
+  ledger_dict = json.loads(response.text)
+  return ledger_dict
