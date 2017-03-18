@@ -3,6 +3,9 @@ from django.http import HttpResponse
 from django.shortcuts import *
 from django.template import loader
 from oauth2client.client import OAuth2WebServerFlow
+from .models import User
+
+from datetime import datetime, timedelta
 
 def index(request):
   #template = loader.get_template('polls/index.html')
@@ -27,8 +30,7 @@ def auth(request):
 
 def auth_return(request):
   if 'access_token' in request.GET:
-    access_token = request.GET['access_token']
-    expires_in = request.GET['expires_in']
-    token_type = request.GET['token_type']
-    print(access_token, expires_in, token_type)
+    u = User(access_token=request.GET['access_token'],
+             token_expiration=datetime.now() + timedelta(seconds=int(request.GET['expires_in'])))
+    u.save()
   return render(request, 'dbank_api/auth_return.html')
