@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import *
 from django.template import loader
 from oauth2client.client import OAuth2WebServerFlow
-from .models import User
+from .models import User, Transaction
 import requests
 import json
 from dateutil.parser import parse
@@ -60,9 +60,17 @@ def auth_return(request):
 
     u.save()
 
-    #store transactions #TODO
-
-
+    #store transactions
+    for transact in transactions:
+      t = Transaction(
+        user=u,
+        origin_iban=transact['originIban'],
+        amount=float(transact['amount']),
+        counter_party_name=transact['counterPartyName'],
+        usage=transact['usage'],
+        booking_date=parse(transact['bookingDate'])
+      )
+      t.save()
 
   return render(request, 'dbank_api/auth_return.html')
 

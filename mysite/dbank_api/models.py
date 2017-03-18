@@ -18,8 +18,8 @@ class User(models.Model):
   city = models.CharField(max_length=30, null=True)
 
 
-class Transactions(models.Model):
-  user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+class Transaction(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
   origin_iban = models.CharField(max_length=30, null=True)
   amount = models.FloatField(null=True)
   counter_party_name = models.CharField(max_length=100, null=True)
