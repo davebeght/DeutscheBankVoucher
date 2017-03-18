@@ -4,6 +4,7 @@ from django.shortcuts import *
 from django.template import loader
 from oauth2client.client import OAuth2WebServerFlow
 from .models import User
+import requests
 
 from datetime import datetime, timedelta
 
@@ -33,4 +34,10 @@ def auth_return(request):
     u = User(access_token=request.GET['access_token'],
              token_expiration=datetime.now() + timedelta(seconds=int(request.GET['expires_in'])))
     u.save()
+    print(access_endpoint(u, '/transactions'))
   return render(request, 'dbank_api/auth_return.html')
+
+def access_endpoint(user, endpoint):
+  auth_header = {'Authorization': 'Bearer ' + str(user.access_token)}
+  response = requests.get('https://simulator-api.db.com/gw/dbapi/v1' + endpoint, headers=auth_header)
+  return response
