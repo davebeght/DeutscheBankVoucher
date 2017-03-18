@@ -6,6 +6,7 @@ from oauth2client.client import OAuth2WebServerFlow
 from .models import User
 import requests
 import json
+from dateutil.parser import parse
 
 from datetime import datetime, timedelta
 
@@ -32,13 +33,37 @@ def auth(request):
 
 def auth_return(request):
   if 'access_token' in request.GET:
+    #save access token and token expiration datetime
     u = User(access_token=request.GET['access_token'],
              token_expiration=datetime.now() + timedelta(seconds=int(request.GET['expires_in'])))
     u.save()
+
+    #make api calls for user
     transactions = access_endpoint(u, '/transactions')
     addresses = access_endpoint(u, '/addresses')
     cash_accounts = access_endpoint(u, '/cashAccounts')
     user_info = access_endpoint(u, '/userInfo')
+
+    #save basic user information
+    u.first_name = user_info['firstName']
+    u.last_name = user_info['lastName']
+    u.male = ('male' == user_info['gender'])
+    u.date_of_birth = parse(user_info['dateOfBirth'])
+
+    #save address
+    if len(addresses) >= 1:
+      i = 0
+      u.city = addresses[i]['city']
+      u.street = addresses[i]['street']
+      u.house_number = addresses[i]['houseNumber']
+      u.zip = addresses[i]['zip']
+
+    u.save()
+
+    #store transactions #TODO
+
+
+
   return render(request, 'dbank_api/auth_return.html')
 
 def access_endpoint(user, endpoint):
