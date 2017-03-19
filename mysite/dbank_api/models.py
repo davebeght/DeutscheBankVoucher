@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from .data import Categories
 from collections import Counter
 import re
+from .util import find_voucher
 
 class User(models.Model):
   #basic user info
@@ -31,7 +32,25 @@ class User(models.Model):
     return Transaction.objects.filter(user=self).all()
 
   def get_vouchers(self):
-    return Voucher.objects.all()#filter(user=self).all() #TODO: apply filter
+    return Voucher.objects.filter(user=self).all() #TODO: apply filter
+
+  def add_vouchers(self, keyword):
+    data = find_voucher(self.city.lower(), keyword)
+    print(data)
+    for index, row in data.iterrows():
+      v = Voucher(
+        user=self,
+        description = row['description'],
+        image_url = row['imageUrl'],
+        location = row['location'],
+        merchant = row['merchant_name'],
+        original_price = float(row['originalPrice'].replace(',','.')),
+        new_price = float(row['new_price'].replace(',','.')),
+        groupon_link = row['redirectUrl'],
+        score = 1.0
+      )
+      v.save()
+
 
 class Transaction(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)

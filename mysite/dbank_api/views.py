@@ -34,6 +34,9 @@ def auth(request):
 def auth_return(request):
   if 'access_token' in request.GET:
     u = retrieve_and_store_user_data(request)
+    keywords, categories = u.get_keywords_and_categories()
+    print(keywords[0], u.city)
+    u.add_vouchers(keywords[0])
     context = {'first_name': u.first_name, 'last_name': u.last_name, 'vouchers': u.get_vouchers()}
     return render(request, 'dbank_api/auth_return.html', context)
   else:
