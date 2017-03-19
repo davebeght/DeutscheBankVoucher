@@ -14,7 +14,11 @@ import requests
 
 def find_voucher(loc, query):
     query = query.replace(" ", "&").lower()
+    loc = loc.lower().replace("ü","ue").replace("ö","ue").replace("ä","ae")
     requesturl = "https://www.groupon.de/browse/" + loc + "?address=" + loc.title() + "?query=" + query + "&hasLocCookie=true&locale=de_DE"
+
+    print(requesturl)
+
     response = requests.get(requesturl)
 
     soup = BeautifulSoup(response.text,"html.parser")
