@@ -93,11 +93,10 @@
         <!-- /.container -->
     </nav>
 
-<!--     <div class="jumbotron" style="padding-top: 60px">
-          <h1>Hello {{first_name}}</h1>      
+    <div class="jumbotron" style="padding-top: 60px">
+          <h2>Hello {{first_name}}</h2>
           <p>Here are your discounts for the day</p>
     </div>
- -->
 
     <div class="row" style="padding-left: 30px;">
         {% for voucher in vouchers %}
@@ -111,7 +110,7 @@
                             <h3><a class="card-title" href={{voucher.groupon_link}}>{{voucher.merchant}}</a></h3>
                             <p class="card-text">{{voucher.description}}</p>
 
-                            <p class="card-text">Price: {{voucher.new_price}}$ (was {{voucher.original_price}}$)</p>
+                            <p class="card-text">Price: {{voucher.new_price}}€ (was {{voucher.original_price}}€)</p>
                             <p class="card-text">Location: {{voucher.location}}</p>
                         </div>
                     </div>

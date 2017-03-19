@@ -36,12 +36,11 @@ class User(models.Model):
 
   def add_vouchers(self, keyword):
     data = find_voucher(self.city.lower(), keyword)
-    print(data)
     for index, row in data.iterrows():
       v = Voucher(
         user=self,
         description = row['description'],
-        image_url = row['imageUrl'],
+        image_url = 'http://' + row['imageUrl'],
         location = row['location'],
         merchant = row['merchant_name'],
         original_price = float(row['originalPrice'].replace(',','.')),
